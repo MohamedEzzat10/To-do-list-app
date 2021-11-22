@@ -1,4 +1,4 @@
-// // add task
+// variables
 
 let btnAdd = document.querySelector(".content span");
 let tasksContainer = document.querySelector(".task-container");
@@ -19,71 +19,43 @@ let counter = 0;
 let counterFinished = 0;
 
 let allTasks = [];
-console.log(allTasks);
 let allTasksFinished = [];
 window.onload = input.focus();
 
-
-// localStorage.setItem("tasks", "")
-//     // let local = JSON.parse(localStorage.getItem("tasks"));
-//     // console.log(local);
-
-// if (allTasks.length === 0) {
-//     msgNoTask.style.display = "block";
-
-//     console.log(allTasks.length);
-// }
-// btnAdd.addEventListener("click", addTask);
-
-// function addTask() {
-//     if (input.value === "") {
-//         alert("enter your task first")
-//     } else {
-//         msgNoTask.style.display = "none"
-
-//         allTasks.push(`${input.value}`);
-//         localStorage.setItem("tasks", JSON.stringify(allTasks));
-//         tasksContainer.innerHTML += `
-//             <div class="task">
-//             <p class ="text">${allTasks[allTasks.length - 1]}</p>
-//             <div class="btn-control">
-//             <span class="edit"> Edit</span>
-//             <span class="delet">Delet</span>
-//             </div>
-//             </div>`;
-//         localStorage.setItem("tasks", JSON.stringify(allTasks));
-//         input.value = "";
-
-
-//         countTask();
-//         input.focus()
-//         btnAll.style.display = "flex";
-
-//     }
-// }
-
-
-
-// // let taskStoge = JSON.parse(localStorage.getItem("tasks"));
-
-
-//schecked local storge item 
-if(localStorage.getItem("tasks")&&localStorage.getItem("tasks") !=""){
+//shecked local storge item 
+if(localStorage.getItem("tasks") &&localStorage.getItem("tasks") !=" "){
     allTasks = JSON.parse(localStorage.getItem("tasks"))
         let arryLocal= JSON.parse(localStorage.getItem("tasks"))
         console.log(arryLocal);
         
-            tasksContainer.innerHTML = ""
+        msgNoTask.style.display = "none"
            arryLocal.forEach((ele,index)=>{
             addTasksTocontainer (ele,index+1)
     
            })
     
+} else if(localStorage.getItem("tasks") &&localStorage.getItem("tasks") ==" "){
+    msgNoTask.style.display = "block"
+    console.log("ghsiyi");
 }
+if(localStorage.getItem("tasksFinshed")&&localStorage.getItem("tasksFinshed")!=""){
+    let tasks = document.querySelectorAll(".task .text");
+    let tasksFinshedLocal = JSON.parse(localStorage.getItem("tasksFinshed"))
+    allTasksFinished = tasksFinshedLocal
+    tasksFinshedLocal.forEach(taskEl=>{
+        console.log();
+        tasks.forEach(e=>{
+            if(e.innerHTML === taskEl){
+                e.classList.add("active")
+            }
+        })
+    })
+    countTask();
+    
 
-
-
-
+}
+// shecked finshed task in local 
+// add new task 
 btnAdd.addEventListener("click", addTask);
 
 function addTask() {
@@ -91,23 +63,17 @@ function addTask() {
         alert("enter your task first")
     } else {
         allTasks.push(`${input.value}`);
-
-
         msgNoTask.style.display = "none"
-        
-        localStorage.setItem("tasks", JSON.stringify( allTasks));
+             localStorage.setItem("tasks", JSON.stringify( allTasks));
 addTasksTocontainer(allTasks[allTasks.length-1],allTasks.length)
-
-       
-
-    }
+        }
 }
 
 // add tasks to dom container
 function addTasksTocontainer (ele,index){
     tasksContainer.innerHTML += `
     <div class="task">
-    <p class ="text"> ${ele}</p>
+    <p class ="text">${ele}</p>
     <div class="btn-control">
     <span class="edit"> Edit</span>
     <span class="delet">Delet</span>
@@ -120,73 +86,62 @@ countTask();
 input.focus()
 btnAll.style.display = "flex";
 }
-
+// events in page 
 document.addEventListener("click",
     function(e) {
         let pragraphElement = e.target.parentElement.parentElement.firstElementChild;
-        let tastTarget = e.target.parentElement.parentElement.firstElementChild.textContent;
+        let taskTarget = e.target.parentElement.parentElement.firstElementChild.textContent
         if (e.target.className === "text") {
             e.target.classList.toggle("active");
             e.target.parentElement.classList.add("active")
-
-            allTasksFinished.push(e.target.parentElement)
+            allTasksFinished.push(e.target.textContent)
+            localStorage.setItem("tasksFinshed",JSON.stringify(allTasksFinished));
             console.log(allTasksFinished);
-            countTask()
-
-
+            countTask();
         }
+      
         if (e.target.className === "delet") {
-
-
             allTasks.forEach((task) => {
-                if (task === tastTarget) {
-                    const index = allTasks.indexOf(tastTarget)
+                
+                            if (task === taskTarget ) {
+                                deletEle(allTasks,taskTarget);
+                                deletEle(allTasksFinished,taskTarget);
 
-                    if (index > -1) {
-                        allTasks.splice(index, 1)
 
                         localStorage.setItem("tasks", JSON.stringify(allTasks));
-                        // if(allTasks.length)
-
+                        localStorage.setItem("tasksFinshed",JSON.stringify(allTasksFinished));
 
                     }
-
-                };
-
-
-
-            })
-
+                })
+            
             e.target.parentElement.parentElement.remove();
             countTask()
-
         }
         if (e.target.className === "edit") {
             popup.style.display = "block"
             let inptPop = document.querySelector(".pop-up-edit input");
-            inptPop.value = tastTarget;
+            inptPop.value = taskTarget;
             inptPop.focus();
-            let btnEdit = document.querySelector(".pop-up-edit button");
+                        let btnEdit = document.querySelector(".pop-up-edit button");
             btnEdit.addEventListener("click", () => {
-                allTasks[allTasks.indexOf(tastTarget)] = inptPop.value;
+                allTasks[allTasks.indexOf(taskTarget)] = inptPop.value;
+                localStorage.setItem("tasks", JSON.stringify(allTasks));
                 pragraphElement.innerHTML = inptPop.value
-
-
+                popup.style.display = "none"
             })
         }
     })
 
 
 // delet all tasks
-
 deletAll.addEventListener("click", () => {
         tasksContainer.innerHTML = "No Tasks Now";
         allTasks = [];
         allTasksFinished = []
         countTask();
         localStorage.setItem("tasks", JSON.stringify(allTasks));
+        localStorage.setItem("tasksFinshed", JSON.stringify(allTasksFinished));
         btnAll.style.display = "none";
-
     })
     // delet all finished
 deletallFininshed.addEventListener("click", () => {
@@ -194,32 +149,38 @@ deletallFininshed.addEventListener("click", () => {
         taskAll.forEach((task) => {
             if (task.classList.contains("active") === true) {
                 task.remove()
-                const index = allTasksFinished.indexOf(task)
-                if (index > -1) {
-                    allTasksFinished.splice(index, 1)
-                }
-                const index2 = allTasks.indexOf(task.firstElementChild.textContent)
+                let taskFinshTarget = task.firstElementChild.textContent
+               
+                const index2 = allTasks.indexOf(taskFinshTarget)
                 if (index2 > -1) {
-                    allTasks.splice(index, 1)
+                    allTasks.splice(index2, 1)
                 }
             }
         })
         allTasksFinished = []
         countTask()
+        localStorage.setItem("tasks", JSON.stringify(allTasks));
+        localStorage.setItem("tasksFinshed", JSON.stringify(allTasksFinished));
+
     })
     // close popup
 popupClose.addEventListener("click", () => {
     popup.style.display = "none"
 })
 
-
-
-
-
-// counter
+// counter function
 function countTask() {
     counter = allTasks.length;
     totalTask.innerHTML = counter;
     counterFinished = allTasksFinished.length;
+    console.log(counterFinished);
     totalTaskFinished.innerHTML = counterFinished;
 }
+// function delet element 
+    function deletEle(tasks,ele){
+        console.log(ele);
+        const index = tasks.indexOf(ele)
+        console.log(index);
+        if (index > -1) {
+            tasks.splice(index, 1)
+            }}
