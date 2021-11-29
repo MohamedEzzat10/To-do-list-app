@@ -62,6 +62,12 @@
     margin: 10px 0;
     padding: 10px;
 }
+.tasks .message{
+    text-align: center;
+    font-size: 24px;
+    font-weight: 600;
+    color:#4caf50;
+}
 
 .task-container {
     margin: 20px;
@@ -89,6 +95,7 @@
 
 .tasks .task p.active {
     color: #4caf50;
+    text-decoration: line-through;
 }
 
 .tasks .task .btn-control .delet,

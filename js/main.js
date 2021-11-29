@@ -6,7 +6,7 @@ let totalTask = document.querySelector(".total-task .number");
 let input = document.querySelector(".content input");
 let deletAll = document.querySelector(".all-task")
 let deletallFininshed = document.querySelector(".all-finished")
-let msgNoTask = document.querySelector(".task-container p")
+let msgNoTask = document.querySelector(".tasks p")
 let popup = document.querySelector(".pop-up-edit");
 let popupClose = document.querySelector(".pop-up-edit span");
 let totalTaskFinished = document.querySelector(".total-task-finash .number");
@@ -20,13 +20,13 @@ let counterFinished = 0;
 
 let allTasks = [];
 let allTasksFinished = [];
-window.onload = input.focus();
+window.onload = input.focus(); 
+
 
 //shecked local storge item 
 if(localStorage.getItem("tasks") &&localStorage.getItem("tasks") !=" "){
     allTasks = JSON.parse(localStorage.getItem("tasks"))
         let arryLocal= JSON.parse(localStorage.getItem("tasks"))
-        console.log(arryLocal);
         
         msgNoTask.style.display = "none"
            arryLocal.forEach((ele,index)=>{
@@ -36,14 +36,12 @@ if(localStorage.getItem("tasks") &&localStorage.getItem("tasks") !=" "){
     
 } else if(localStorage.getItem("tasks") &&localStorage.getItem("tasks") ==" "){
     msgNoTask.style.display = "block"
-    console.log("ghsiyi");
 }
 if(localStorage.getItem("tasksFinshed")&&localStorage.getItem("tasksFinshed")!=""){
     let tasks = document.querySelectorAll(".task .text");
     let tasksFinshedLocal = JSON.parse(localStorage.getItem("tasksFinshed"))
     allTasksFinished = tasksFinshedLocal
     tasksFinshedLocal.forEach(taskEl=>{
-        console.log();
         tasks.forEach(e=>{
             if(e.innerHTML === taskEl){
                 e.classList.add("active")
@@ -54,23 +52,38 @@ if(localStorage.getItem("tasksFinshed")&&localStorage.getItem("tasksFinshed")!="
     
 
 }
+
+           // show or hidden message notasks and btn delet
+ 
+showMessage ()
+
 // shecked finshed task in local 
 // add new task 
-btnAdd.addEventListener("click", addTask);
+input.addEventListener("keyup",(e)=>{
+    if(e.keyCode == 13){
+        msgNoTask.style.display = "none"
+        addTask()
+    }
+});
 
+btnAdd.addEventListener("click",addTask,showMessage)
+// function add task
 function addTask() {
     if (input.value == "") {
         alert("enter your task first")
     } else {
-        allTasks.push(`${input.value}`);
+
+
         msgNoTask.style.display = "none"
-             localStorage.setItem("tasks", JSON.stringify( allTasks));
-addTasksTocontainer(allTasks[allTasks.length-1],allTasks.length)
+        
+        allTasks.push(`${input.value}`);
+         localStorage.setItem("tasks", JSON.stringify( allTasks));
+        addTasksTocontainer(allTasks[allTasks.length-1])
         }
 }
 
 // add tasks to dom container
-function addTasksTocontainer (ele,index){
+function addTasksTocontainer (ele){
     tasksContainer.innerHTML += `
     <div class="task">
     <p class ="text">${ele}</p>
@@ -84,19 +97,22 @@ input.value = "";
 
 countTask();
 input.focus()
-btnAll.style.display = "flex";
+showMessage ()
 }
 // events in page 
 document.addEventListener("click",
     function(e) {
-        let pragraphElement = e.target.parentElement.parentElement.firstElementChild;
+      
         let taskTarget = e.target.parentElement.parentElement.firstElementChild.textContent
         if (e.target.className === "text") {
-            e.target.classList.toggle("active");
-            e.target.parentElement.classList.add("active")
+            if(!e.target.classList.contains("active"))
+            {
+                e.target.classList.add("active")
+            }else{
+                e.target.classList.remove("active")
+            }
             allTasksFinished.push(e.target.textContent)
             localStorage.setItem("tasksFinshed",JSON.stringify(allTasksFinished));
-            console.log(allTasksFinished);
             countTask();
         }
       
@@ -116,6 +132,8 @@ document.addEventListener("click",
             
             e.target.parentElement.parentElement.remove();
             countTask()
+            showMessage ()
+            input.focus()
         }
         if (e.target.className === "edit") {
             popup.style.display = "block"
@@ -123,19 +141,43 @@ document.addEventListener("click",
             inptPop.value = taskTarget;
             inptPop.focus();
                         let btnEdit = document.querySelector(".pop-up-edit button");
-            btnEdit.addEventListener("click", () => {
+                        let inputEdit = document.querySelector(".pop-up-edit input");
+                        let pragraphElement = e.target.parentElement.parentElement.firstElementChild;
+            btnEdit.addEventListener("click",edit )
+            inputEdit.addEventListener("keyup",(e)=>{
+                if(e.keyCode == 13){
+                    edit ()
+                }
+            });
+
+            // function edit button
+             function edit (){
+                allTasks.forEach((e)=>{
+                 
+                    if(e === taskTarget ){
                 allTasks[allTasks.indexOf(taskTarget)] = inptPop.value;
+                allTasksFinished[allTasksFinished.indexOf(taskTarget)] = inptPop.value
+                    }
+                })
                 localStorage.setItem("tasks", JSON.stringify(allTasks));
-                pragraphElement.innerHTML = inptPop.value
-                popup.style.display = "none"
-            })
+                localStorage.setItem("tasksFinshed", JSON.stringify(allTasksFinished));
+                let elementTask =document.querySelectorAll(".task .text")
+for(let i= 0 ; i < elementTask.length ;i++){
+    elementTask[i].innerHTML = allTasks[i]
+
+    }
+                
+                popup.style.display = "none";
+                input.focus()
+            }
         }
     })
 
 
 // delet all tasks
 deletAll.addEventListener("click", () => {
-        tasksContainer.innerHTML = "No Tasks Now";
+    msgNoTask.style.display = "block"
+        tasksContainer.innerHTML = "";
         allTasks = [];
         allTasksFinished = []
         countTask();
@@ -145,23 +187,27 @@ deletAll.addEventListener("click", () => {
     })
     // delet all finished
 deletallFininshed.addEventListener("click", () => {
-        let taskAll = document.querySelectorAll(".task");
+        let taskAll = document.querySelectorAll(".task .text");
         taskAll.forEach((task) => {
             if (task.classList.contains("active") === true) {
-                task.remove()
-                let taskFinshTarget = task.firstElementChild.textContent
+                let taskFinshTarget = task.textContent
+                var element = task.parentElement
                
                 const index2 = allTasks.indexOf(taskFinshTarget)
                 if (index2 > -1) {
                     allTasks.splice(index2, 1)
+                    element.remove()
+                  
+
                 }
             }
+            
         })
         allTasksFinished = []
         countTask()
         localStorage.setItem("tasks", JSON.stringify(allTasks));
         localStorage.setItem("tasksFinshed", JSON.stringify(allTasksFinished));
-
+        showMessage ()
     })
     // close popup
 popupClose.addEventListener("click", () => {
@@ -173,14 +219,25 @@ function countTask() {
     counter = allTasks.length;
     totalTask.innerHTML = counter;
     counterFinished = allTasksFinished.length;
-    console.log(counterFinished);
     totalTaskFinished.innerHTML = counterFinished;
 }
 // function delet element 
     function deletEle(tasks,ele){
-        console.log(ele);
         const index = tasks.indexOf(ele)
-        console.log(index);
         if (index > -1) {
             tasks.splice(index, 1)
-            }}
+            }
+        }
+
+        // show or hidden message notasks and btn delet
+function showMessage (){
+    if(allTasks.length == 0){
+        msgNoTask.style.display = "block"
+        btnAll.style.display = "none";
+        
+    }else{
+        msgNoTask.style.display = "none"
+        btnAll.style.display = "flex";
+
+    }
+}
